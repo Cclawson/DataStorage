@@ -1,103 +1,147 @@
 package com.example.codyclawson.datastorage;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import android.os.Looper;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
-
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
-    TaskTimer taskTimer;
+    MainActivity activity;
+    DbHandler db;
+    Spinner prioritySpin;
+    String priorityFilter = "All";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        activity = this;
+        db = new DbHandler(this);
 
-        DbHandler db = new DbHandler(this);
+        prioritySpin = (Spinner) findViewById(R.id.toolSpinner);
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("All" );
+        list.add("1" );
+        list.add("2" );
+        list.add("3" );
+        list.add("4" );
+        list.add("5" );
 
-// Inserting Shop/Rows
-        Log.d("Insert: ", "Inserting .." );
-        db.addTask(new Task("Task 1", "#ffffff", 120, 1, 2, 0));
-        db.addTask(new Task("Task 2", "#eee", 1000, 2, 3, 0));
-        db.addTask(new Task("Task 3", "#dddddd", 1, 1, 1, 0));
-        db.addTask(new Task("Task 4", "#ccc", 6130, 3, 5, 0));
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, list);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        prioritySpin.setAdapter(dataAdapter);
+        prioritySpin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                priorityFilter = parentView.getSelectedItem().toString();
+                UpdateList();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+
+        });
+
+        UpdateList();
+        db.close();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        final DbHandler db = new DbHandler(this);
+        UpdateList();
+        db.close();
+
+    }
 
 
-        // Reading all shops
+    private void UpdateList()
+    {
+
+        LinearLayout ll = (LinearLayout) findViewById(R.id.tasklist);
+        ll.removeAllViews();
+
+        // Reading all tasks
+        Log.d("Reading: ", "Reading all tasks after adding.." );
         List<Task> tasks = db.getAllTasks();
 
-        for (final Task task : tasks) {
+        List<Task> filtered = new ArrayList<Task>();
+        for(Task task : tasks)
+        {
+            if(Long.toString(task.getPriority()).equals(priorityFilter) || priorityFilter.equals("All"))
+                filtered.add(task);
+        }
+
+
+        for (final Task task : filtered) {
             String log = "Id: " + task.getId() + " ,Parent ID: " + task.getParentId() + " ,Name: " + task.getName() + " ,Color: " + task.getColor() + " ,Time: " + task.getTime() + " ,Category: " + task.getCategoryId() + " ,Priority: " + task.getPriority() + " ,Completed: " + task.getCompleted();
 
             final TextView tv1 = new TextView(this);
-            tv1.setText(task.getName());
+            tv1.setText(task.getName() + ": Time(S):" + (task.getTime()/1000));
             tv1.setTextSize(14);
+            tv1.setPadding(10,10,10,10);
+            tv1.setTextColor(Color.BLACK);
+            tv1.setBackgroundColor(Color.argb(100, 47, 79, 79));
+            if(task.getCompleted() == 1){
+                tv1.setBackgroundColor(Color.argb(100,48,153,58));
+            }
+
             tv1.setOnClickListener(new TextView.OnClickListener() {
                 public void onClick(View v) {
-                    onTaskClick(task.getId());
+                    Intent intent = new Intent(activity, TaskActivity.class);
+                    intent.putExtra("task",task);
+
+                    startActivity(intent);                }
+            });
+
+            final Button b1 = new Button(this);
+            String s = "Delete " + task.getName();
+            b1.setText(s);
+            b1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                  db.deleteTask(task);
+                  UpdateList();
                 }
             });
-            LinearLayout ll = (LinearLayout) findViewById(R.id.tasklist);
+
             ll.addView(tv1);
-//            db.deleteTask(task);
+            ll.addView(b1);
         }
-
-        //Create timer object with time
-        taskTimer = new TaskTimer(4000);
-        //Add listener
-
-        taskTimer.setOnTimeUpdateListener(new TaskTimer.TimerListener() {
-            @Override
-            public void OnTimeUpdate(long timeMS) {
-//                System.out.println("Time(MS):" + (timeMS / 1000));
-            }
-        });
     }
 
 
     public void openCreateTask(View view) {
         Intent intent = new Intent(this, CreateTaskActivity.class);
-//        EditText editText = (EditText) findViewById(R.id.edit_message);
-//        String message = editText.getText().toString();
-//        intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
 
     }
 
 
-    public void announceAction(String msg) {
-        //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); // display temporary Toast message
-//        System.out.println(msg);  // output to console
-    }
-
-    public void OnButtonClick(View view) {
-        taskTimer.Start();
-    }
-
-
-    public void OnCancelClick(View view) {
-        taskTimer.Pause();
-    }
-
-    public void onTaskClick(int id) {
-        Intent intent = new Intent(this, TaskDetailActivity.class);
-        intent.putExtra("task_id", Integer.toString(id));
-        startActivity(intent);
-    }
+//    public void onTaskClick(int id) {
+//        Intent intent = new Intent(this, TaskDetailActivity.class);
+//        intent.putExtra("task_id", Integer.toString(id));
+//        startActivity(intent);
+//    }
 
 }

@@ -1,5 +1,6 @@
 package com.example.codyclawson.datastorage;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -52,6 +53,17 @@ public class CreateTaskActivity extends AppCompatActivity {
 
         db.addTask(newTask);
 
+        db.close();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
 
     }
+
+    @Override
+    public void onBackPressed() {
+        db.close();
+        finish();
+    }
+
 }
