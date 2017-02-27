@@ -19,39 +19,31 @@
         android:onClick="openCreateTask"
         />
 
-    <Button
-        android:text="Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="25dp"
-        android:layout_marginStart="25dp"
-        android:id="@+id/button"
-        android:layout_below="@+id/tasklist"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:onClick="OnButtonClick"
-        android:layout_marginTop="58dp" />
 
-    <Button
-        android:text="Cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/button"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="62dp"
-        android:layout_marginEnd="62dp"
-        android:onClick="OnCancelClick"
-        android:id="@+id/button2" />
 
-    <LinearLayout
+
+        <ScrollView
+            android:id="@+id/scrollTasks"
+            android:layout_width="match_parent"
+            android:layout_height="500px"
+            android:orientation="vertical"
+            android:layout_below="@+id/createTask"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="10dp"
+            android:background="@android:color/white"
+            android:scrollbarStyle="outsideOverlay">
+
+        <LinearLayout
         android:id="@+id/tasklist"
         android:layout_width="match_parent"
-        android:layout_height="500px"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_below="@+id/createTask"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp"
-        android:scrollbarStyle="outsideOverlay"></LinearLayout>
+        android:scrollbarStyle="outsideOverlay"/>
+        </ScrollView>
+
+
+
 </RelativeLayout>

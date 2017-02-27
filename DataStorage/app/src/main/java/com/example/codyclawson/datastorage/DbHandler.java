@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.io.Serializable;
 import java.security.Key;
 import java.security.KeyException;
 import java.util.ArrayList;
@@ -16,11 +17,11 @@ import java.util.List;
  * Created by CodyClawson on 2/22/2017.
  */
 
-public class DbHandler extends SQLiteOpenHelper {
+public class DbHandler extends SQLiteOpenHelper{
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "TaskData";
 
-//Tasks Table Defenition
+//Tasks Table Definition
     private static final String TABLE_TASKS = "tasks";
     private static final String TABLE_Category = "category";
     private static final String KEY_ID = "id";
@@ -37,8 +38,10 @@ public class DbHandler extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+
     @Override
     public void onCreate(SQLiteDatabase db) {
+
 
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TASKS);
 
@@ -64,6 +67,7 @@ public class DbHandler extends SQLiteOpenHelper {
     public void addTask(Task task) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+
         ContentValues values = new ContentValues();
         values.put(KEY_PARENT_ID, task.getParentId());
         values.put(KEY_NAME, task.getName());
@@ -74,7 +78,7 @@ public class DbHandler extends SQLiteOpenHelper {
         values.put(KEY_COMPLETED, task.getCompleted());
 
         db.insert(TABLE_TASKS, null, values);
-        db.close();
+
     }
 
     public void addCat(Category cat){
@@ -85,7 +89,6 @@ public class DbHandler extends SQLiteOpenHelper {
         values.put(KEY_NAME, cat.getName());
 
         db.insert(TABLE_Category, null, values);
-        db.close();
     }
 
     // Getting one shop
@@ -100,11 +103,13 @@ public class DbHandler extends SQLiteOpenHelper {
 
         Task task = new Task(Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)),
                 cursor.getString(2), cursor.getString(3), Long.parseLong(cursor.getString(4)), Integer.parseInt(cursor.getString(5)), Integer.parseInt(cursor.getString(6)),Integer.parseInt(cursor.getString(7)) );
+
+        cursor.close();
         return task;
     }
 
     public Category getCat(int id){
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cursor = db.query(TABLE_Category, new String[]{KEY_ID,
                         KEY_NAME}, KEY_ID + "=?",
@@ -114,6 +119,8 @@ public class DbHandler extends SQLiteOpenHelper {
 
         Category cat = new Category(Integer.parseInt(cursor.getString(0)),
                 cursor.getString(1));
+        cursor.close();
+
         return cat;
     }
 
@@ -123,7 +130,7 @@ public class DbHandler extends SQLiteOpenHelper {
 // Select All Query
         String selectQuery = "SELECT * FROM " + TABLE_TASKS;
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
 // looping through all rows and adding to list
@@ -143,7 +150,7 @@ public class DbHandler extends SQLiteOpenHelper {
                 taskList.add(task);
             } while (cursor.moveToNext());
         }
-
+        cursor.close();
 // return contact list
         return taskList;
     }
@@ -156,25 +163,26 @@ public List<Task> getSubTasks(int id) {
     Cursor cursor = db.query(TABLE_TASKS, new String[]{KEY_ID, KEY_PARENT_ID,
                     KEY_NAME, KEY_COLOR, KEY_TIME, KEY_CATEGORYID, KEY_PRIORITY, KEY_COMPLETED}, KEY_PARENT_ID + "=?",
             new String[]{String.valueOf(id)}, null, null, null, null);
-    if (cursor != null)
+    if (cursor != null) {
 // looping through all rows and adding to list
-    if (cursor.moveToFirst()) {
-        do {
-            Task task = new Task();
-            task.setId(Integer.parseInt(cursor.getString(0)));
-            task.setParentId(Integer.parseInt(cursor.getString(1)));
-            task.setName(cursor.getString(2));
-            task.setColor(cursor.getString(3));
-            task.setTime(Long.parseLong(cursor.getString(4)));
-            task.setCategoryId(Integer.parseInt(cursor.getString(5)));
-            task.setPriority(Integer.parseInt(cursor.getString(6)));
-            task.setCompleted(Integer.parseInt(cursor.getString(7)));
+        if (cursor.moveToFirst()) {
+            do {
+                Task task = new Task();
+                task.setId(Integer.parseInt(cursor.getString(0)));
+                task.setParentId(Integer.parseInt(cursor.getString(1)));
+                task.setName(cursor.getString(2));
+                task.setColor(cursor.getString(3));
+                task.setTime(Long.parseLong(cursor.getString(4)));
+                task.setCategoryId(Integer.parseInt(cursor.getString(5)));
+                task.setPriority(Integer.parseInt(cursor.getString(6)));
+                task.setCompleted(Integer.parseInt(cursor.getString(7)));
 
 
-            taskList.add(task);
-        } while (cursor.moveToNext());
+                taskList.add(task);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
     }
-
 // return contact list
     return taskList;
 }
@@ -196,7 +204,7 @@ public List<Task> getSubTasks(int id) {
                 catList.add(cat);
             } while (cursor.moveToNext());
         }
-
+        cursor.close();
 // return contact list
         return catList;
     }
@@ -206,7 +214,6 @@ public List<Task> getSubTasks(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
         cursor.close();
-
 // return count
         return cursor.getCount();
     }
@@ -225,8 +232,11 @@ public List<Task> getSubTasks(int id) {
         values.put(KEY_COMPLETED, task.getCompleted());
 
 // updating row
-        return db.update(TABLE_TASKS, values, KEY_ID + " = ?",
+        int returnVal = db.update(TABLE_TASKS, values, KEY_ID + " = ?",
                 new String[]{String.valueOf(task.getId())});
+
+        return returnVal;
+
     }
 
     // Deleting a shop
@@ -235,6 +245,5 @@ public List<Task> getSubTasks(int id) {
         String id = Integer.toString(task.getId());
         db.delete(TABLE_TASKS, KEY_ID + " = ?",
                 new String[] { String.valueOf(task.getId()) });
-        db.close();
     }
 }

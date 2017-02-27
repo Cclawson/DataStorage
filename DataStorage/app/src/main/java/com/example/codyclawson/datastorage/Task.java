@@ -1,14 +1,16 @@
 package com.example.codyclawson.datastorage;
 
+import java.io.Serializable;
+
 /**
  * Created by CodyClawson on 2/22/2017.
  */
 
-public class Task {
+public class Task implements Serializable{
     private int id;
     private int parentID;
-    private String name;
-    private String color;
+    private String name = "";
+    private String color = "";
     private long time;
     private int categoryId;
     private int priority;
@@ -17,6 +19,17 @@ public class Task {
 
     public Task()
     {
+    }
+    public Task(Task t)
+    {
+        this.id=t.getId();
+        this.parentID=t.getParentId();
+        this.name=t.getName();
+        this.color=t.getColor();
+        this.time=t.getTime();
+        this.categoryId = t.categoryId;
+        this.priority=t.priority;
+        this.completed=t.completed;
     }
 
     public Task(int id,int parentID, String name, String color, long time, int categoryId, int priority, int completed)

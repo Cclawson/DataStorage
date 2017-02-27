@@ -54,4 +54,11 @@ public class CreateTaskActivity extends AppCompatActivity {
 
 
     }
+
+    @Override
+    public void onBackPressed() {
+        db.close();
+        finish();
+    }
+
 }

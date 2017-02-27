@@ -1,5 +1,6 @@
 package com.example.codyclawson.datastorage;
 
+import android.app.Activity;
 import android.os.Looper;
 
 import java.util.Timer;
@@ -20,6 +21,8 @@ public class TaskTimer {
     private long mLastTimeMS;
     private long mCurrentTimeMS;
 
+    public Activity activity;
+
     public interface TimerListener
     {
         void OnTimeUpdate(long timeMS);
@@ -27,6 +30,7 @@ public class TaskTimer {
     private TimerListener mTimerListener;
 
 
+    Runnable uiInterface;
 
 
 
@@ -39,12 +43,13 @@ public class TaskTimer {
 
         @Override
         public void run() {
-
-            mCurrentTimeMS = mCurrentTimeMS + (System.currentTimeMillis() - mLastTimeMS);
-            mLastTimeMS = System.currentTimeMillis();
-            mTimerListener.OnTimeUpdate(mCurrentTimeMS);
+            activity.runOnUiThread(uiInterface);
         }
+
     }
+
+
+
 
     public long getTimeMS()
     {
@@ -59,11 +64,23 @@ public class TaskTimer {
     }
 
 
-    public TaskTimer(long currentDuration)
+    public TaskTimer(Activity activity, long currentDuration)
     {
         mIsRunning = false;
+        this.activity = activity;
+
+        uiInterface = new Runnable() {
+            @Override
+            public void run() {
+                mCurrentTimeMS = mCurrentTimeMS + (System.currentTimeMillis() - mLastTimeMS);
+                mLastTimeMS = System.currentTimeMillis();
+                mTimerListener.OnTimeUpdate(mCurrentTimeMS);
+            }
+        };
+
         task = new MyTimer();
         timer = new Timer();
+
 
         mCurrentTimeMS = currentDuration;
     }
