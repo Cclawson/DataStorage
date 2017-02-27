@@ -9,11 +9,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
+
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,18 +39,22 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Reading all shops
-        Log.d("Reading: ", "Reading all shops after adding.." );
         List<Task> tasks = db.getAllTasks();
 
-        for (Task task : tasks) {
+        for (final Task task : tasks) {
             String log = "Id: " + task.getId() + " ,Parent ID: " + task.getParentId() + " ,Name: " + task.getName() + " ,Color: " + task.getColor() + " ,Time: " + task.getTime() + " ,Category: " + task.getCategoryId() + " ,Priority: " + task.getPriority() + " ,Completed: " + task.getCompleted();
-            // Writing shops to log
-            Log.d("Task: : ", log);
+
             final TextView tv1 = new TextView(this);
             tv1.setText(task.getName());
             tv1.setTextSize(14);
+            tv1.setOnClickListener(new TextView.OnClickListener() {
+                public void onClick(View v) {
+                    onTaskClick(task.getId());
+                }
+            });
             LinearLayout ll = (LinearLayout) findViewById(R.id.tasklist);
             ll.addView(tv1);
+//            db.deleteTask(task);
         }
 
         //Create timer object with time
@@ -58,13 +64,13 @@ public class MainActivity extends AppCompatActivity {
         taskTimer.setOnTimeUpdateListener(new TaskTimer.TimerListener() {
             @Override
             public void OnTimeUpdate(long timeMS) {
-                System.out.println("Time(MS):"+(timeMS/1000));
+//                System.out.println("Time(MS):" + (timeMS / 1000));
             }
         });
     }
 
 
-    public void openCreateTask(View view){
+    public void openCreateTask(View view) {
         Intent intent = new Intent(this, CreateTaskActivity.class);
 //        EditText editText = (EditText) findViewById(R.id.edit_message);
 //        String message = editText.getText().toString();
@@ -76,20 +82,22 @@ public class MainActivity extends AppCompatActivity {
 
     public void announceAction(String msg) {
         //Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); // display temporary Toast message
-        System.out.println(msg);  // output to console
+//        System.out.println(msg);  // output to console
     }
 
-    public void OnButtonClick(View view)
-    {
+    public void OnButtonClick(View view) {
         taskTimer.Start();
     }
 
 
-    public void OnCancelClick(View view)
-    {
+    public void OnCancelClick(View view) {
         taskTimer.Pause();
     }
 
-
+    public void onTaskClick(int id) {
+        Intent intent = new Intent(this, TaskDetailActivity.class);
+        intent.putExtra("task_id", Integer.toString(id));
+        startActivity(intent);
+    }
 
 }
